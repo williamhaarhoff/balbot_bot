@@ -1,0 +1,49 @@
+<launch>
+
+
+    <!--launch  conversion from quaternion to rpy node-->
+    <node pkg="balbot_bot_control" type="tilt_message_node.py" name="tilt_qat2rpy"
+        output="screen">
+        <remap from="imu/data" to="imu"/>
+    </node>
+
+    <!--launch  split the pwm values between motors-->
+    <!--node pkg="balbot_bot_control" type="effort_splitter.py" name="effort_splitter"
+        output="screen">
+    </node-->
+
+    <!--launch the serial link between ROS and Arduino controller-->
+    <node pkg="rosserial_python" type="serial_node.py" name="serial_link" args="/dev/ttyACM0"
+        output="screen">
+    </node>
+
+    <!--launch RVIZ-->
+    <node pkg="rriz" type="rviz" name="rviz" args="/dev/ttyACM0"
+          output="screen">
+    </node>
+
+
+    <node name="tilt_pid" pkg="pid" type="controller" output="screen" >
+      <param name="Kp" value="12.0" />
+      <param name="Ki" value="18.0" />
+      <param name="Kd" value="0.8" />
+      <param name="upper_limit" value="250" />
+      <param name="lower_limit" value="-250" />
+      <param name="windup_limit" value="240" />
+      <param name="diagnostic_period" value="0.25" />
+      <param name="max_loop_frequency" value="200.0" />
+      <param name="min_loop_frequency" value="199.0" />
+      <param name="angle_error" value="false"/>
+      <param name="setpoint_topic" value="/target_tilt"/>
+      <param name="topic_from_plant" value="/tilt"/>
+      <param name= "topic_from_controller" value="/tilt_effort"/>
+    </node>
+
+
+     <node name="rqt_plot" pkg="rqt_plot" type="rqt_plot"
+    args="/tilt /target_tilt /tilt_effort" />
+
+    <node name="rqt_reconfigure" pkg="rqt_reconfigure" type="rqt_reconfigure">
+     </node>
+
+</launch>
